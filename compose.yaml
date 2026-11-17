@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image:  postgres:17
+    environment:
+      POSTGRES_USER: fish
+      POSTGRES_PASSWORD: development
+      POSTGRES_DB: fishdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fish -d fishdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gateway:
+    build: ../fish
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  kanban:
+    build:
+      context: ../kanban
+    image: kanban:dev
+
+volumes:
+  postgres_data:
