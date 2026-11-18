@@ -2,13 +2,13 @@ services:
   postgres:
     image:  postgres:17
     environment:
-      POSTGRES_USER: fish
-      POSTGRES_PASSWORD: development
-      POSTGRES_DB: fishdb
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U fish -d fishdb"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:?DB_USER is required} -d ${DB_NAME:?DB_NAME is required}"] #this functiionally is ${VARIABLE:? error message}
       interval: 5s
       timeout: 5s
       retries: 10
@@ -25,6 +25,14 @@ services:
     build:
       context: ../kanban
     image: kanban:dev
-
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
 volumes:
   postgres_data:
